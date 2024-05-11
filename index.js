@@ -25,22 +25,68 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
 
-    const rooms = client.db("roomsDB");
-    const roomsCollection = rooms.collection("rooms");
+    const allrooms = client.db("allroomsDB");
+    const allroomsCollection = allrooms.collection("allrooms");
 
-    app.get('/rooms', async(req,res) =>{
-        const cursor = roomsCollection.find();
+
+    app.get('/allrooms', async(req,res) =>{
+        
+        const cursor = allroomsCollection.find();
         const result = await cursor.toArray();
         res.send(result);
   
       })
-      app.get('/rooms/:id', async(req,res) => {
+
+
+      app.get('/allrooms/:id', async(req,res) => {
         const id = req.params.id;
         // console.log(id);
         const query = { _id: new ObjectId(id) };
-        const review = await roomsCollection.findOne(query);
+        const review = await allroomsCollection.findOne(query);
         res.send(review);
       })
+
+
+
+      app.put('/allrooms/:id', async (req, res) => {
+        const id = req.params.id;
+        const newAvailability = req.body.availability;
+        // console.log(newAvailability)
+  
+       
+          const query = { _id: new ObjectId(id) };
+        //   const options = { upsert: true };
+          const update = { 
+            $set: 
+            { 
+                availability: newAvailability 
+            } 
+        };
+          const result = await allroomsCollection.updateOne(query, update);
+          console.log(result);
+          
+          if (result.modifiedCount === 1) {
+            res.send({ success: true, message: 'Room availability updated successfully' });
+          } 
+       
+      });
+
+
+
+      const userInfo = client.db("userInfoDB");
+      const userCollection = userInfo.collection("userInfo");
+      
+      app.post('/bookings', async (req, res) => {
+       
+            const newBooking = req.body;
+            // console.log(newBooking)
+            const result = await userCollection.insertOne(newBooking);
+            res.json({ success: true, message: 'Room booked successfully.' });
+       
+        });
+    
+   
+
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
