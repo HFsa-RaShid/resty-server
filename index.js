@@ -84,6 +84,14 @@ async function run() {
             res.json({ success: true, message: 'Room booked successfully.' });
        
         });
+
+        app.get('/myBookings/:email', async(req,res) =>{
+        
+          const cursor = userCollection.find();
+          const result = await cursor.toArray();
+          res.send(result);
+    
+        })
     
    
 
