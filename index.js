@@ -63,8 +63,7 @@ async function run() {
             } 
         };
           const result = await allroomsCollection.updateOne(query, update);
-          console.log(result);
-          
+         
           if (result.modifiedCount === 1) {
             res.send({ success: true, message: 'Room availability updated successfully' });
           } 
@@ -92,9 +91,31 @@ async function run() {
           res.send(result);
     
         })
-    
-   
+        
+        // Cancel Booking and Update Room Availability
+      app.delete('/allrooms/:bookingId', async (req, res) => {
+      const bookingId = req.params.bookingId;
+  
+      const bookingQuery = { _id: new ObjectId(bookingId) };
+      const booking = await userCollection.findOne(bookingQuery);
+      const roomId = booking.room._id;
+     
+      const bookingResult = await userCollection.deleteOne(bookingQuery);
 
+      const availabilityQuery = { _id: new ObjectId(roomId) }; 
+      const update = { 
+        $set: 
+          { 
+            availability: true 
+          } 
+        }; 
+      const Result = await allroomsCollection.updateOne(availabilityQuery, update);
+      res.send(Result)
+
+    });
+
+
+    
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
