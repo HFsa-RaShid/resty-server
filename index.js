@@ -114,7 +114,6 @@ async function run() {
 
     });
 
-
     
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
