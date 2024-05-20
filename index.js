@@ -10,7 +10,8 @@ const express = require ('express');
     app.use(cors(
       {
         origin: [
-          'http://localhost:5173'
+          'http://localhost:5173',
+          'http://localhost:5174'
         ],
         credentials: true
       }
@@ -74,7 +75,7 @@ async function run() {
     // auth related api
     app.post('/jwt', logger, async(req,res) =>{
       const user = req.body;
-      console.log('user for token', user);
+      // console.log('user for token', user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
       res.cookie('token', token,{
         httpOnly: true,
@@ -94,19 +95,27 @@ async function run() {
     })
 
 
-
-
-
-
-
-
-      app.get('/allrooms', async (req, res) => {
-       
-          const cursor = allroomsCollection.find();
+    app.get('/allrooms', async (req, res) => {
+      const minPrice = parseFloat(req.query.minPrice);
+      const maxPrice = parseFloat(req.query.maxPrice);
+  
+      let query = {};
+  
+      if (!isNaN(minPrice) && !isNaN(maxPrice)) {
+          query.pricePerNight = { $gte: minPrice, $lte: maxPrice };
+      } else if (!isNaN(minPrice)) {
+          query.pricePerNight = { $gte: minPrice };
+      } else if (!isNaN(maxPrice)) {
+          query.pricePerNight = { $lte: maxPrice };
+      }
+  
+          const cursor = allroomsCollection.find(query);
           const result = await cursor.toArray();
+          console.log(result)
           res.send(result);
-       
-      });
+      
+  });
+  
   
       app.get('/allrooms/:id', async (req, res) => {
     
@@ -116,6 +125,7 @@ async function run() {
           }
           const query = { _id: new ObjectId(id) };
           const room = await allroomsCollection.findOne(query);
+         
           res.send(room);
       });
   
@@ -144,6 +154,16 @@ async function run() {
           res.json({ success: true, message: 'Room booked successfully.' }); 
       });
   
+
+      app.get('/myBookings', async (req, res) => {
+       
+          const cursor = userCollection.find();
+          const result = await cursor.toArray();
+         
+          res.send(result);
+       
+      });
+
       app.get('/myBookings/:id', async (req, res) => {
       
           const id = req.params.id;
@@ -227,9 +247,16 @@ async function run() {
    
   });
 
-    
 
-  
+app.get('/reviewForRoom/roomNumber/:roomNumber', async (req, res) => {
+  const roomNumber = parseInt(req.params.roomNumber, 10); 
+
+      const cursor = BookingRoomReviewCollection.find({ roomNumber: roomNumber });
+      const result = await cursor.toArray();
+      // console.log(result);
+      res.send(result);
+ 
+});
 
     
     // Send a ping to confirm a successful connection
