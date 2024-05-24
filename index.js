@@ -10,8 +10,10 @@ const express = require ('express');
     app.use(cors(
       {
         origin: [
-          'http://localhost:5173',
-          'http://localhost:5174'
+          // 'http://localhost:5173',
+          // 'http://localhost:5174'
+          'https://ass10-resty-client.web.app',
+          'https://ass10-resty-client.firebaseapp.com'
         ],
         credentials: true
       }
